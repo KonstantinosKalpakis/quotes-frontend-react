@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  frontend:
+    build: .
+    container_name: quotes-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      # Μέσα στο container, το backend στο Windows host φαίνεται ως host.docker.internal
+      - REACT_APP_API_BASE_URL=http://host.docker.internal:3001
+    volumes:
+      - .:/app
+      - /app/node_modules
