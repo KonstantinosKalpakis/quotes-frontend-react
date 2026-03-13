@@ -1,14 +1,47 @@
-version: "3.9"
+version: '3.8'
 
 services:
+  # Backend.
+  backend:
+    image: programize/quotes-backend-express
+    environment:
+      HOST: 0.0.0.0
+      MONGO_URI: mongodb://quotes-backend:quotes-backend@mongodb:27017/quotes-db?authSource=admin
+      NODE_ENV: development
+      PORT: 3001
+    ports:
+      - 3001:3001
+    volumes:
+      - src:/app/src
+    depends_on:
+      - mongodb
+
+  # MongoDB.
+  mongodb:
+    image: mongo:5.0.2
+    environment:
+      MONGO_INITDB_DATABASE: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+      MONGO_INITDB_ROOT_USERNAME: admin
+    hostname: mongodb
+    ports:
+      - 27017:27017
+    volumes:
+      - ./mongodb:/docker-entrypoint-initdb.d:ro
+      - db:/data/db
+
+  # Frontend.
   frontend:
-    build: .
+    build:
+      context: "E:/Cursor/quotes-frontend-react"
+      dockerfile: Dockerfile
     container_name: quotes-frontend
     ports:
       - "3000:3000"
     environment:
-      # Μέσα στο container, το backend στο Windows host φαίνεται ως host.docker.internal
-      - REACT_APP_API_BASE_URL=http://host.docker.internal:3001
-    volumes:
-      - .:/app
-      - /app/node_modules
+      - REACT_APP_API_BASE_URL=http://localhost:3001
+    depends_on:
+      - backend
+volumes:
+  db:
+  src:
